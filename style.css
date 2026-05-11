@@ -1,0 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+:root{
+  --bg:#07060D;
+  --text:#E8E4FF;
+  --neon:#8B5CF6;
+  --cyan:#22D3EE;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  overflow-x:hidden;
+}
+
+nav{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:20px 40px;
+
+  background:rgba(7,6,13,0.8);
+  backdrop-filter:blur(10px);
+}
+
+.nav-logo{
+  font-size:1.2rem;
+  font-weight:700;
+}
+
+.nav-logo span{
+  color:var(--neon);
+}
+
+.nav-links{
+  display:flex;
+  gap:30px;
+  list-style:none;
+}
+
+.nav-links a{
+  color:white;
+  text-decoration:none;
+}
+
+.hero-inner{
+  min-height:100vh;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  text-align:center;
+  padding:120px 20px;
+}
+
+.hero-title{
+  font-size:4rem;
+  line-height:1.1;
+}
+
+.line-2{
+  color:var(--neon);
+}
+
+.line-3{
+  color:var(--cyan);
+  font-style:italic;
+}
+
+.hero-typing{
+  margin-top:20px;
+  font-size:1.2rem;
+  color:var(--cyan);
+}
+
+.hero-desc{
+  margin-top:20px;
+  max-width:700px;
+  line-height:1.8;
+}
+
+.hero-desc mark{
+  background:none;
+  color:var(--neon);
+}
+
+#cursor{
+  width:10px;
+  height:10px;
+  background:var(--neon);
+
+  position:fixed;
+  border-radius:50%;
+  pointer-events:none;
+}
+
+#cursor-ring{
+  width:30px;
+  height:30px;
+
+  border:1px solid var(--neon);
+
+  position:fixed;
+  border-radius:50%;
+  pointer-events:none;
+}
+
+.bg-grid{
+  position:fixed;
+  inset:0;
+
+  background-image:
+  linear-gradient(rgba(139,92,246,0.05) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(139,92,246,0.05) 1px, transparent 1px);
+
+  background-size:60px 60px;
+
+  z-index:-1;
+}
+
+.blob{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(120px);
+}
+
+.blob-1{
+  width:400px;
+  height:400px;
+
+  background:rgba(139,92,246,0.2);
+
+  top:-100px;
+  left:-100px;
+}
+
+.scanline{
+  position:fixed;
+  inset:0;
+
+  pointer-events:none;
+
+  background:
+  repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255,255,255,0.02) 2px,
+    rgba(255,255,255,0.02) 4px
+  );
+}
