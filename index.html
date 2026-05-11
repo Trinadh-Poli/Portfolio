@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Trinadh Poli — Java Backend Developer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@1&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07060D;--bg-2:#0C0A18;--bg-3:#11102A;
+  --surface:rgba(20,18,40,0.6);--border:rgba(139,92,246,0.18);
+  --text:#E8E4FF;--text-soft:#A8A3D1;--text-muted:#6B6890;
+  --neon:#8B5CF6;--neon-2:#6366F1;--cyan:#22D3EE;--pink:#F472B6;--green:#4ADE80;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden;cursor:none}
+body.loading{overflow:hidden}
+::selection{background:rgba(139,92,246,0.3);color:var(--text)}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--neon);border-radius:2px}
+
+/* CURSOR */
+#cursor{position:fixed;width:12px;height:12px;background:var(--neon);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s,width .2s,height .2s,opacity .2s;mix-blend-mode:screen}
+#cursor-ring{position:fixed;width:36px;height:36px;border:1px solid rgba(139,92,246,0.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .15s ease,width .3s,height .3s,border-color .3s;will-change:transform}
+#cursor.hovering{width:6px;height:6px}
+#cursor-ring.hovering{width:50px;height:50px;border-color:var(--neon)}
+
+/* PRELOADER */
+#preloader{position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px}
+.pre-logo{font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--neon);letter-spacing:0.2em}
+.pre-log-box{width:min(480px,90vw);font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-muted);display:flex;flex-direction:column;gap:6px;min-height:160px}
+.pre-log-line{opacity:0;transform:translateX(-8px);transition:opacity .3s,transform .3s;display:flex;gap:10px}
+.pre-log-line.show{opacity:1;transform:translateX(0)}
+.pre-log-line span:first-child{color:var(--green)}
+.pre-bar{width:min(480px,90vw);height:2px;background:rgba(139,92,246,0.1);border-radius:2px;overflow:hidden}
+.pre-bar-fill{height:100%;background:linear-gradient(90deg,var(--neon),var(--cyan));width:0%;transition:width .3s}
+.pre-pct{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-muted)}
+#preloader.done{opacity:0;pointer-events:none;transition:opacity .6s .2s}
+
+/* BACKGROUND */
+.bg-grid{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(139,92,246,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,0.04) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 40%,transparent 100%)}
+.blob{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;animation:drift 20s infinite ease-in-out}
+.blob-1{width:600px;height:600px;background:radial-gradient(circle,rgba(139,92,246,0.15),transparent 70%);top:-100px;left:-100px;animation-delay:0s}
+.blob-2{width:500px;height:500px;background:radial-gradient(circle,rgba(34,211,238,0.1),transparent 70%);top:40%;right:-100px;animation-delay:-7s}
+.blob-3{width:400px;height:400px;background:radial-gradient(circle,rgba(244,114,182,0.08),transparent 70%);bottom:-50px;left:30%;animation-delay:-13s}
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(40px,-60px) scale(1.1)}66%{transform:translate(-30px,40px) scale(0.95)}}
+
+/* SCANLINE */
+.scanline{position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);animation:scan 8s linear infinite}
+@keyframes scan{0%{background-position:0 0}100%{background-position:0 100%}}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(20px);border-bottom:1px solid rgba(139,92,246,0.08);background:rgba(7,6,13,0.7)}
+.nav-logo{font-family:'JetBrains Mono',monospace;font-size:1rem;color:var(--text);font-weight:600;letter-spacing:-0.02em}
+.nav-logo span{color:var(--neon)}
+.nav-links{display:flex;gap:32px;list-style:none}
+.nav-links a{color:var(--text-muted);text-decoration:none;font-size:0.85rem;font-weight:500;letter-spacing:0.02em;transition:color .2s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--neon);transition:width .3s}
+.nav-links a:hover{color:var(--text)}
+.nav-links a:hover::after{width:100%}
+.nav-pill{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);border-radius:100px;padding:6px 14px;font-size:0.72rem;color:var(--green);font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:6px}
+.nav-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.nav-mobile-toggle{display:none;flex-direction:column;gap:5px;cursor:pointer}
+.nav-mobile-toggle span{width:24px;height:1.5px;background:var(--text-soft);display:block;transition:.3s}
+
+/* SECTIONS */
+section{position:relative;z-index:2}
+.container{max-width:1200px;margin:0 auto;padding:0 40px}
+
+/* HERO */
+#hero{min-height:100vh;display:flex;align-items:center;padding-top:100px;padding-bottom:80px}
+.hero-inner{display:grid;grid-template-columns:1fr 420px;gap:60px;align-items:center;width:100%;max-width:1200px;margin:0 auto;padding:0 40px}
+.hero-pill{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:8px 16px;font-size:0.75rem;font-family:'JetBrains Mono',monospace;color:var(--text-soft);margin-bottom:28px;backdrop-filter:blur(10px)}
+.hero-pill-dot{width:6px;height:6px;border-radius:50%;background:var(--neon);box-shadow:0 0 8px var(--neon)}
+h1.hero-title{font-size:clamp(2.8rem,5vw,4.2rem);font-weight:800;line-height:1.05;letter-spacing:-0.04em;margin-bottom:12px}
+h1.hero-title .line-1{display:block;color:var(--text)}
+h1.hero-title .line-2{display:block;background:linear-gradient(135deg,var(--neon),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+h1.hero-title .line-3{display:block;color:var(--text-soft);font-style:italic;font-family:'Instrument Serif',serif;font-weight:400;font-size:0.85em}
+.hero-typing{font-family:'JetBrains Mono',monospace;font-size:1rem;color:var(--cyan);margin-bottom:20px;min-height:1.5rem}
+.hero-typing::after{content:'|';animation:blink .8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.hero-desc{color:var(--text-soft);font-size:1rem;line-height:1.7;max-width:520px;margin-bottom:36px}
+.hero-desc mark{background:none;color:var(--text);font-weight:600}
+.hero-cta{display:flex;gap:16px;flex-wrap:wrap}
+.btn-primary{background:linear-gradient(135deg,var(--neon),var(--neon-2));color:white;border:none;padding:14px 28px;border-radius:10px;font-size:0.875rem;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:transform .2s,box-shadow .2s;box-shadow:0 0 30px rgba(139,92,246,0.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(139,92,246,0.5)}
+.btn-ghost{background:transparent;color:var(--text-soft);border:1px solid var(--border);padding:14px 28px;border-radius:10px;font-size:0.875rem;font-weight:500;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:border-color .2s,color .2s}
+.btn-ghost:hover{border-color:var(--neon);color:var(--text)}
+
+/* HERO RIGHT */
+.hero-right{display:flex;flex-direction:column;gap:16px}
+.hero-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;backdrop-filter:blur(20px);position:relative;overflow:hidden}
+.hero-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(139,92,246,0.05),transparent);pointer-events:none}
+.hero-card-label{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px}
+.hero-card-val{font-size:0.95rem;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.hud-brackets{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.hud-br{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:rgba(139,92,246,0.4)}
+.clock-display{font-family:'JetBrains Mono',monospace;font-size:1.3rem;color:var(--neon);font-weight:600;text-align:center;margin-bottom:4px}
+.clock-tz{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text-muted);text-align:center}
+.status-row{display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.15);border-radius:10px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 2s infinite;flex-shrink:0}
+.status-text{font-size:0.82rem;color:var(--green);font-weight:600}
+.hero-flash{background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:10px;padding:14px 18px;font-size:0.85rem;color:var(--text-soft);display:flex;align-items:center;gap:10px}
+.hero-flash strong{color:var(--text)}
+
+/* STATS BAR */
+#stats{padding:0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.stats-inner{display:grid;grid-template-columns:repeat(4,1fr);max-width:1200px;margin:0 auto;padding:0 40px}
+.stat-item{padding:32px 24px;text-align:center;border-right:1px solid var(--border);position:relative}
+.stat-item:last-child{border-right:none}
+.stat-num{font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;color:var(--neon);display:block;margin-bottom:4px}
+.stat-label{font-size:0.78rem;color:var(--text-muted);letter-spacing:0.05em}
+
+/* MARQUEE */
+.marquee-wrap{padding:20px 0;border-bottom:1px solid var(--border);overflow:hidden;background:linear-gradient(90deg,var(--bg) 0%,transparent 10%,transparent 90%,var(--bg) 100%)}
+.marquee-track{display:flex;gap:0;animation:marquee 30s linear infinite;width:max-content}
+.marquee-track span{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--text-muted);padding:0 28px;white-space:nowrap}
+.marquee-track span.sep{color:var(--neon);opacity:0.5}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* TERMINAL */
+#terminal-section{padding:100px 0}
+.terminal-wrap{max-width:1200px;margin:0 auto;padding:0 40px;display:grid;grid-template-columns:1fr 480px;gap:60px;align-items:center}
+.terminal-copy .section-tag{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--neon);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:16px;display:block}
+.terminal-copy h2{font-size:clamp(2rem,3.5vw,3rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:16px}
+.terminal-copy p{color:var(--text-soft);line-height:1.7;font-size:0.95rem}
+.terminal-box{background:var(--bg-3);border:1px solid var(--border);border-radius:16px;overflow:hidden;font-family:'JetBrains Mono',monospace}
+.terminal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:rgba(17,16,42,0.8)}
+.t-dot{width:10px;height:10px;border-radius:50%}
+.t-dot.r{background:#FF5F57}.t-dot.y{background:#FFBD2E}.t-dot.g{background:#28CA40}
+.t-title{font-size:0.72rem;color:var(--text-muted);margin-left:auto}
+.terminal-body{padding:20px;min-height:260px;font-size:0.78rem;line-height:1.7}
+.t-line{display:flex;gap:8px;margin-bottom:4px;opacity:0;transform:translateY(4px)}
+.t-line.show{opacity:1;transform:translateY(0);transition:opacity .3s,transform .3s}
+.t-prompt{color:var(--neon-2)}
+.t-cmd{color:var(--text)}
+.t-ok{color:var(--green)}
+.t-info{color:var(--cyan)}
+.t-comment{color:var(--text-muted)}
+.t-cursor{display:inline-block;width:8px;height:14px;background:var(--neon);animation:blink .8s infinite;vertical-align:middle;margin-left:2px}
+
+/* PROJECTS */
+#projects{padding:100px 0}
+.section-header{max-width:1200px;margin:0 auto 60px;padding:0 40px}
+.section-tag{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--neon);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:16px;display:block}
+.section-title{font-size:clamp(2rem,3.5vw,3rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1}
+.section-title em{font-style:italic;font-family:'Instrument Serif',serif;font-weight:400;color:var(--text-soft)}
+.projects-grid{max-width:1200px;margin:0 auto;padding:0 40px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.project-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;cursor:pointer;transition:border-color .3s,transform .3s;position:relative;overflow:hidden;backdrop-filter:blur(10px)}
+.project-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(139,92,246,0.08),transparent 60%);opacity:0;transition:opacity .3s}
+.project-card:hover{border-color:rgba(139,92,246,0.4);transform:translateY(-4px)}
+.project-card:hover::before{opacity:1}
+.proj-glyph{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-muted);margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.proj-num{color:var(--neon);font-size:0.65rem}
+.proj-title{font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:10px;letter-spacing:-0.02em}
+.proj-desc{font-size:0.82rem;color:var(--text-soft);line-height:1.6;margin-bottom:20px}
+.proj-tags{display:flex;flex-wrap:wrap;gap:6px}
+.proj-tag{font-family:'JetBrains Mono',monospace;font-size:0.65rem;padding:4px 10px;border-radius:100px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);color:var(--text-soft)}
+.featured-card{grid-column:span 2;padding:40px}
+.featured-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:100px;padding:5px 12px;font-size:0.68rem;font-family:'JetBrains Mono',monospace;color:var(--neon);margin-bottom:16px}
+.feat-title{font-size:1.5rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:12px}
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}
+.feat-point{background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.1);border-radius:8px;padding:10px 14px;font-size:0.78rem;color:var(--text-soft);display:flex;align-items:center;gap:8px}
+.feat-point::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--neon);flex-shrink:0}
+
+/* ABOUT */
+#about{padding:100px 0}
+.about-inner{max-width:1200px;margin:0 auto;padding:0 40px;display:grid;grid-template-columns:1fr 360px;gap:60px;align-items:start}
+.about-text h2{font-size:clamp(2rem,3.5vw,3rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:24px}
+.about-text p{color:var(--text-soft);line-height:1.8;font-size:0.95rem;margin-bottom:16px}
+.about-text p mark{background:none;color:var(--text);font-weight:600}
+.facts-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;backdrop-filter:blur(20px)}
+.facts-title{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:20px}
+.fact-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(139,92,246,0.08)}
+.fact-row:last-child{border-bottom:none}
+.fact-key{font-size:0.78rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
+.fact-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;max-width:180px}
+.fact-val.green{color:var(--green)}
+
+/* STACK */
+#stack{padding:100px 0}
+.stack-grid{max-width:1200px;margin:0 auto;padding:0 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.stack-col{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;backdrop-filter:blur(10px)}
+.stack-col-title{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--neon);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.stack-items{display:flex;flex-direction:column;gap:4px}
+.stack-item{padding:10px 14px;border-radius:8px;font-size:0.83rem;color:var(--text-soft);transition:all .2s;cursor:default;display:flex;align-items:center;gap:10px;position:relative;overflow:hidden}
+.stack-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,rgba(139,92,246,0.1),transparent);transition:width .3s}
+.stack-item:hover{color:var(--text);background:rgba(139,92,246,0.05);transform:translateX(4px)}
+.stack-item:hover::before{width:100%}
+.stack-item-dot{width:5px;height:5px;border-radius:50%;background:var(--neon);flex-shrink:0;opacity:0.6}
+.stack-item:hover .stack-item-dot{opacity:1;box-shadow:0 0 6px var(--neon)}
+
+/* EXPERIENCE / JOURNEY */
+#experience{padding:100px 0}
+.journey-grid{max-width:1200px;margin:0 auto;padding:0 40px;display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.journey-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;backdrop-filter:blur(10px);position:relative;transition:border-color .3s,transform .2s}
+.journey-card:hover{border-color:rgba(139,92,246,0.35);transform:translateY(-2px)}
+.j-tag{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--cyan);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;display:block}
+.j-title{font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:8px}
+.j-sub{font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;font-family:'JetBrains Mono',monospace}
+.j-points{display:flex;flex-direction:column;gap:6px}
+.j-point{font-size:0.82rem;color:var(--text-soft);display:flex;gap:10px;line-height:1.5}
+.j-point::before{content:'›';color:var(--neon);flex-shrink:0;font-weight:700}
+.j-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:100px;font-size:0.65rem;font-family:'JetBrains Mono',monospace;margin-bottom:12px}
+.badge-green{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.2);color:var(--green)}
+.badge-purple{background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);color:var(--neon)}
+.badge-cyan{background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.2);color:var(--cyan)}
+.badge-pink{background:rgba(244,114,182,0.1);border:1px solid rgba(244,114,182,0.2);color:var(--pink)}
+
+/* CONTACT */
+#contact{padding:100px 0}
+.contact-inner{max-width:800px;margin:0 auto;padding:0 40px;text-align:center}
+.contact-inner h2{font-size:clamp(2.2rem,4vw,3.5rem);font-weight:800;letter-spacing:-0.04em;line-height:1.1;margin-bottom:16px}
+.contact-inner h2 em{font-style:italic;font-family:'Instrument Serif',serif;font-weight:400;color:var(--text-soft)}
+.contact-inner p{color:var(--text-soft);font-size:0.95rem;margin-bottom:40px;line-height:1.7}
+.contact-links{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+.contact-link{display:flex;align-items:center;gap:10px;padding:14px 24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text-soft);text-decoration:none;font-size:0.85rem;font-weight:500;transition:border-color .2s,color .2s,transform .2s;backdrop-filter:blur(10px)}
+.contact-link:hover{border-color:rgba(139,92,246,0.4);color:var(--text);transform:translateY(-2px)}
+.contact-link svg{width:16px;height:16px;flex-shrink:0}
+
+/* FOOTER */
+footer{padding:40px;text-align:center;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-muted)}
+footer span{color:var(--neon)}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s,transform .7s}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* RESPONSIVE */
+@media(max-width:1024px){
+  .hero-inner{grid-template-columns:1fr;max-width:700px}
+  .hero-right{display:none}
+  .projects-grid{grid-template-columns:repeat(2,1fr)}
+  .featured-card{grid-column:span 2}
+  .about-inner{grid-template-columns:1fr}
+  .stack-grid{grid-template-columns:repeat(2,1fr)}
+  .journey-grid{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  nav{padding:16px 20px}
+  .nav-links{display:none}
+  .nav-mobile-toggle{display:flex}
+  .container{padding:0 20px}
+  .hero-inner{padding:0 20px}
+  .stats-inner{grid-template-columns:repeat(2,1fr);padding:0 20px}
+  .stat-item:nth-child(2){border-right:none}
+  .projects-grid{grid-template-columns:1fr;padding:0 20px}
+  .featured-card{grid-column:span 1}
+  .stack-grid{grid-template-columns:1fr 1fr;padding:0 20px}
+  .about-inner{padding:0 20px}
+  .journey-grid{padding:0 20px}
+  .contact-inner{padding:0 20px}
+  .terminal-wrap{grid-template-columns:1fr;padding:0 20px}
+  .section-header{padding:0 20px}
+  footer{padding:30px 20px}
+  .feat-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .stack-grid{grid-template-columns:1fr}
+  .contact-links{flex-direction:column;align-items:center}
+}
+</style>
+</head>
+<body class="loading">
+
+<!-- CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- PRELOADER -->
+<div id="preloader">
+  <div class="pre-logo">trinadh.dev</div>
+  <div class="pre-log-box" id="preLogBox"></div>
+  <div class="pre-bar"><div class="pre-bar-fill" id="preBarFill"></div></div>
+  <div class="pre-pct" id="prePct">0%</div>
+</div>
+
+<!-- BACKGROUND -->
+<div class="bg-grid"></div>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+<div class="scanline"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">trinadh<span>.dev</span></div>
+  <ul class="nav-links">
+    <li><a href="#hero">home</a></li>
+    <li><a href="#projects">projects</a></li>
+    <li><a href="#stack">stack</a></li>
+    <li><a href="#about">about</a></li>
+    <li><a href="#contact">contact</a></li>
+  </ul>
+  <div class="nav-pill">● open to work</div>
+  <div class="nav-mobile-toggle" id="mobileToggle"><span></span><span></span><span></span></div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-pill">
+        <div class="hero-pill-dot"></div>
+        Java Backend Developer · Fresher
+      </div>
+      <h1 class="hero-title">
+        <span class="line-1">Building Secure</span>
+        <span class="line-2">Backend Systems</span>
+        <span class="line-3">that scale & endure.</span>
+      </h1>
+      <div class="hero-typing" id="heroTyping"></div>
+      <p class="hero-desc">
+        Java developer passionate about <mark>Spring Boot</mark>, <mark>REST APIs</mark>, and <mark>JWT Authentication</mark>.
+        Built production-style backends with <mark>RBAC</mark>, <mark>Hibernate ORM</mark>, and <mark>MySQL</mark>.
+        Seeking an entry-level role to ship real-world backend solutions.
+      </p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          View Projects
+        </a>
+        <a href="mailto:trinadhpoli@gmail.com" class="btn-ghost">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+          Get in Touch
+        </a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-card">
+        <div class="hud-brackets">
+          <span class="hud-br">[ SYS.CLOCK ]</span>
+          <span class="hud-br">IST</span>
+        </div>
+        <div class="clock-display" id="liveClock">--:--:--</div>
+        <div class="clock-tz">India Standard Time · UTC+5:30</div>
+      </div>
+      <div class="hero-card">
+        <div class="status-row">
+          <div class="status-dot"></div>
+          <div class="status-text">Open to Backend Engineering Roles</div>
+        </div>
+      </div>
+      <div class="hero-flash">
+        <span style="font-size:1.2rem">⚡</span>
+        <div><strong>Building secure backend systems</strong><br><span style="font-size:0.78rem">Spring Boot · JWT · MySQL</span></div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-card-label">current focus</div>
+        <div class="hero-card-val">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--neon)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Spring Boot · REST APIs · JWT
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div id="stats">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <span class="stat-num" data-target="5">0</span>
+      <span class="stat-label">Backend Projects</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-target="15" data-suffix="+">0</span>
+      <span class="stat-label">REST APIs Built</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-target="901" data-cgpa="true">0</span>
+      <span class="stat-label">CGPA Score</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" style="font-size:1.1rem;padding-top:4px">Java &amp;</span>
+      <span class="stat-label">Spring Boot Stack</span>
+    </div>
+  </div>
+</div>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marqueeTrack">
+    <span>Java</span><span class="sep">◆</span>
+    <span>Spring Boot</span><span class="sep">◆</span>
+    <span>REST APIs</span><span class="sep">◆</span>
+    <span>MySQL</span><span class="sep">◆</span>
+    <span>Hibernate</span><span class="sep">◆</span>
+    <span>Spring Security</span><span class="sep">◆</span>
+    <span>JWT</span><span class="sep">◆</span>
+    <span>Maven</span><span class="sep">◆</span>
+    <span>Git</span><span class="sep">◆</span>
+    <span>Postman</span><span class="sep">◆</span>
+    <span>JDBC</span><span class="sep">◆</span>
+    <span>OOP</span><span class="sep">◆</span>
+    <span>Java</span><span class="sep">◆</span>
+    <span>Spring Boot</span><span class="sep">◆</span>
+    <span>REST APIs</span><span class="sep">◆</span>
+    <span>MySQL</span><span class="sep">◆</span>
+    <span>Hibernate</span><span class="sep">◆</span>
+    <span>Spring Security</span><span class="sep">◆</span>
+    <span>JWT</span><span class="sep">◆</span>
+    <span>Maven</span><span class="sep">◆</span>
+    <span>Git</span><span class="sep">◆</span>
+    <span>Postman</span><span class="sep">◆</span>
+    <span>JDBC</span><span class="sep">◆</span>
+    <span>OOP</span><span class="sep">◆</span>
+  </div>
+</div>
+
+<!-- TERMINAL SECTION -->
+<section id="terminal-section">
+  <div class="terminal-wrap">
+    <div class="terminal-copy reveal">
+      <span class="section-tag">// backend engine</span>
+      <h2>From Code to<br><em>Running Services</em></h2>
+      <p>Every project starts with a single command. Watch the Spring Boot application bootstrap, connect to MySQL, validate JWT filters, and expose REST endpoints — all in one clean boot sequence.</p>
+    </div>
+    <div class="terminal-box reveal">
+      <div class="terminal-header">
+        <div class="t-dot r"></div><div class="t-dot y"></div><div class="t-dot g"></div>
+        <div class="t-title">trinadh@dev ~ backend-api</div>
+      </div>
+      <div class="terminal-body" id="terminalBody">
+        <div class="t-cursor" id="termCursor"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-header reveal">
+    <span class="section-tag">// projects</span>
+    <h2 class="section-title">Production-Style <em>Backends</em></h2>
+  </div>
+  <div class="projects-grid">
+    <!-- Featured -->
+    <div class="project-card featured-card reveal" id="projCard0">
+      <div class="featured-badge">★ Featured Project</div>
+      <div class="proj-glyph"><span>AURA_MUSIC_PLATFORM</span><span class="proj-num">01</span></div>
+      <div class="feat-title">Aura Music Platform</div>
+      <p class="proj-desc">A fully secure RESTful backend for a music streaming platform. Supports User, Artist, and Admin roles with complete JWT auth, RBAC, and optimized relational database design across Artist → Album → Song → Playlist entities.</p>
+      <div class="feat-grid">
+        <div class="feat-point">JWT Authentication</div>
+        <div class="feat-point">Role-Based Access Control</div>
+        <div class="feat-point">15+ REST Endpoints</div>
+        <div class="feat-point">Spring Security</div>
+        <div class="feat-point">Hibernate ORM</div>
+        <div class="feat-point">Optimized MySQL</div>
+      </div>
+      <div class="proj-tags" style="margin-top:20px">
+        <span class="proj-tag">Spring Boot</span>
+        <span class="proj-tag">Spring Security</span>
+        <span class="proj-tag">JWT</span>
+        <span class="proj-tag">Hibernate</span>
+        <span class="proj-tag">MySQL</span>
+        <span class="proj-tag">REST APIs</span>
+      </div>
+    </div>
+    <!-- Job Board -->
+    <div class="project-card reveal" id="projCard1">
+      <div class="proj-glyph"><span>JOB_BOARD</span><span class="proj-num">02</span></div>
+      <div class="proj-title">Job Board Portal</div>
+      <p class="proj-desc">Role-based job portal backend with COMPANY and CANDIDATE roles. Ownership-based authorization, job postings, application tracking, and secure REST APIs.</p>
+      <div class="proj-tags">
+        <span class="proj-tag">Spring Boot</span>
+        <span class="proj-tag">Spring Security</span>
+        <span class="proj-tag">JWT</span>
+        <span class="proj-tag">MySQL</span>
+        <span class="proj-tag">RBAC</span>
+      </div>
+    </div>
+    <!-- Auth API -->
+    <div class="project-card reveal" id="projCard2">
+      <div class="proj-glyph"><span>AUTH_API</span><span class="proj-num">03</span></div>
+      <div class="proj-title">Authentication &amp; Authorization API</div>
+      <p class="proj-desc">Stateless JWT auth system with secure login/signup, role-based route protection, password encryption, and token validation.</p>
+      <div class="proj-tags">
+        <span class="proj-tag">Java</span>
+        <span class="proj-tag">Spring Security</span>
+        <span class="proj-tag">JWT</span>
+        <span class="proj-tag">MySQL</span>
+      </div>
+    </div>
+    <!-- DB Playground -->
+    <div class="project-card reveal" id="projCard3">
+      <div class="proj-glyph"><span>DB_PLAYGROUND</span><span class="proj-num">04</span></div>
+      <div class="proj-title">Database Performance Playground</div>
+      <p class="proj-desc">Query optimization lab with indexing, joins analysis, lazy vs eager loading benchmarks, and API response efficiency tuning using Hibernate and JPA.</p>
+      <div class="proj-tags">
+        <span class="proj-tag">MySQL</span>
+        <span class="proj-tag">Hibernate</span>
+        <span class="proj-tag">Spring Data JPA</span>
+        <span class="proj-tag">Query Optimization</span>
+      </div>
+    </div>
+    <!-- Multithreading -->
+    <div class="project-card reveal" id="projCard4">
+      <div class="proj-glyph"><span>MULTITHREADING_UTILS</span><span class="proj-num">05</span></div>
+      <div class="proj-title">Java Multithreading Utilities</div>
+      <p class="proj-desc">Concurrent task execution utilities with thread-safe implementations, ExecutorService patterns, and performance-oriented Java programming.</p>
+      <div class="proj-tags">
+        <span class="proj-tag">Core Java</span>
+        <span class="proj-tag">Collections</span>
+        <span class="proj-tag">Multithreading</span>
+        <span class="proj-tag">ExecutorService</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-inner">
+    <div class="about-text reveal">
+      <span class="section-tag">// about</span>
+      <h2>Trinadh Poli —<br><em>Backend Engineer</em></h2>
+      <p>I'm a <mark>Computer Science graduate</mark> (CGPA: 9.01) from Sri Venkateswara College of Engineering, Tirupati, with a deep passion for building scalable, secure backend systems using <mark>Java and Spring Boot</mark>.</p>
+      <p>My work revolves around crafting clean <mark>REST API architectures</mark>, implementing robust <mark>JWT authentication</mark> and <mark>RBAC authorization</mark>, designing efficient <mark>relational database schemas</mark>, and squeezing performance out of <mark>Hibernate ORM and MySQL</mark>.</p>
+      <p>I believe great backend engineering is invisible — it just works, scales, and stays secure. I'm actively seeking an <mark>entry-level Java Backend Developer</mark> or Associate Software Engineer role where I can contribute and grow.</p>
+    </div>
+    <div class="facts-card reveal">
+      <div class="facts-title">// identity.json</div>
+      <div class="fact-row"><span class="fact-key">name</span><span class="fact-val">Trinadh Poli</span></div>
+      <div class="fact-row"><span class="fact-key">role</span><span class="fact-val">Java Backend Developer</span></div>
+      <div class="fact-row"><span class="fact-key">location</span><span class="fact-val">India</span></div>
+      <div class="fact-row"><span class="fact-key">degree</span><span class="fact-val">B.Tech CSE · 2025</span></div>
+      <div class="fact-row"><span class="fact-key">cgpa</span><span class="fact-val">9.01 / 10.0</span></div>
+      <div class="fact-row"><span class="fact-key">focus</span><span class="fact-val">Backend Engineering</span></div>
+      <div class="fact-row"><span class="fact-key">status</span><span class="fact-val green">● Open to Work</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- STACK -->
+<section id="stack">
+  <div class="section-header reveal">
+    <span class="section-tag">// tech stack</span>
+    <h2 class="section-title">Tools I Build <em>With</em></h2>
+  </div>
+  <div class="stack-grid">
+    <div class="stack-col reveal">
+      <div class="stack-col-title">Languages</div>
+      <div class="stack-items">
+        <div class="stack-item"><div class="stack-item-dot"></div>Java</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>SQL</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>C++</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>HTML</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>CSS</div>
+      </div>
+    </div>
+    <div class="stack-col reveal">
+      <div class="stack-col-title">Backend Frameworks</div>
+      <div class="stack-items">
+        <div class="stack-item"><div class="stack-item-dot"></div>Spring Boot</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Spring Framework</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Spring MVC</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Spring Security</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Hibernate ORM</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Spring Data JPA</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>JWT Authentication</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>JDBC</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>REST APIs</div>
+      </div>
+    </div>
+    <div class="stack-col reveal">
+      <div class="stack-col-title">Databases &amp; Tools</div>
+      <div class="stack-items">
+        <div class="stack-item"><div class="stack-item-dot"></div>MySQL</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Query Optimization</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Relational DB Design</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Git &amp; GitHub</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Maven</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Postman</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>IntelliJ IDEA</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>VS Code</div>
+      </div>
+    </div>
+    <div class="stack-col reveal">
+      <div class="stack-col-title">Core Concepts</div>
+      <div class="stack-items">
+        <div class="stack-item"><div class="stack-item-dot"></div>OOP Principles</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Collections Framework</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Multithreading</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Exception Handling</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>MVC Architecture</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>RBAC</div>
+        <div class="stack-item"><div class="stack-item-dot"></div>Auth &amp; Authorization</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE / JOURNEY -->
+<section id="experience">
+  <div class="section-header reveal">
+    <span class="section-tag">// journey</span>
+    <h2 class="section-title">Technical <em>Learning Journey</em></h2>
+  </div>
+  <div class="journey-grid">
+    <div class="journey-card reveal">
+      <span class="j-badge badge-purple">🎵 Backend Project</span>
+      <div class="j-tag">2024 — Featured</div>
+      <div class="j-title">Aura Music Platform</div>
+      <div class="j-sub">Spring Boot · JWT · Hibernate · MySQL</div>
+      <div class="j-points">
+        <div class="j-point">Designed end-to-end secure REST backend with Spring Boot MVC</div>
+        <div class="j-point">Implemented JWT auth &amp; RBAC for User, Artist, Admin roles</div>
+        <div class="j-point">Built 15+ endpoints with validation &amp; exception handling</div>
+        <div class="j-point">Modeled Artist → Album → Song → Playlist relational schema</div>
+      </div>
+    </div>
+    <div class="journey-card reveal">
+      <span class="j-badge badge-cyan">💼 Backend Project</span>
+      <div class="j-tag">2024 — Full Stack Backend</div>
+      <div class="j-title">Job Board Portal</div>
+      <div class="j-sub">Spring Boot · Spring Security · JWT · MySQL</div>
+      <div class="j-points">
+        <div class="j-point">Developed COMPANY and CANDIDATE role workflows</div>
+        <div class="j-point">Built ownership-based authorization using Spring Security</div>
+        <div class="j-point">Created job posting, application, and status tracking APIs</div>
+        <div class="j-point">Layered architecture with validation &amp; exception handling</div>
+      </div>
+    </div>
+    <div class="journey-card reveal">
+      <span class="j-badge badge-green">🎓 Education</span>
+      <div class="j-tag">2021 – 2025</div>
+      <div class="j-title">Bachelor of Technology — Computer Science</div>
+      <div class="j-sub">Sri Venkateswara College of Engineering, Tirupati</div>
+      <div class="j-points">
+        <div class="j-point">Graduated with CGPA 9.01 / 10.0</div>
+        <div class="j-point">Deep focus on data structures, algorithms, and OOP</div>
+        <div class="j-point">Built multiple production-style backend projects</div>
+      </div>
+    </div>
+    <div class="journey-card reveal">
+      <span class="j-badge badge-pink">🏆 Achievements</span>
+      <div class="j-tag">Certifications &amp; Challenges</div>
+      <div class="j-title">Coding Achievements</div>
+      <div class="j-sub">GUVI · Ninja Slayground</div>
+      <div class="j-points">
+        <div class="j-point">GUVI Web Design Skillathon — Certified</div>
+        <div class="j-point">Ninja Slayground 2.0 Coding Challenge — Completed</div>
+        <div class="j-point">Consistent problem-solving and competitive coding practice</div>
+        <div class="j-point">Deep-dived into multithreading and DB performance optimizations</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-inner">
+    <div class="reveal">
+      <span class="section-tag" style="display:block;margin-bottom:16px">// contact</span>
+      <h2>Got a backend problem<br><em>worth building?</em></h2>
+      <p>I'm actively looking for entry-level Java Backend Developer or Associate Software Engineer roles. Let's connect — whether it's an opportunity, a collaboration, or just a conversation about scalable systems.</p>
+      <div class="contact-links">
+        <a href="mailto:trinadhpoli@gmail.com" class="contact-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+          trinadhpoli@gmail.com
+        </a>
+        <a href="https://www.linkedin.com/in/trinadh-poli-64956124a/" target="_blank" rel="noopener" class="contact-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          LinkedIn
+        </a>
+        <a href="https://github.com/Trinadh-Poli" target="_blank" rel="noopener" class="contact-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+          GitHub
+        </a>
+        <a href="tel:+919391223366" class="contact-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.06 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+          +91-93912 23366
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>trinadh.dev</span> · built with consistency. powered by curiosity. <span>◆</span>
+</footer>
+
+<script>
+// CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px'});
+function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)}
+animRing();
+document.querySelectorAll('a,button,.project-card,.stack-item,.contact-link,.journey-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.classList.add('hovering');ring.classList.add('hovering')});
+  el.addEventListener('mouseleave',()=>{cursor.classList.remove('hovering');ring.classList.remove('hovering')});
+});
+
+// PRELOADER
+const logs=[
+  ['✓','initializing spring-context'],
+  ['✓','loading backend modules'],
+  ['✓','validating jwt filters'],
+  ['→','connecting mysql database'],
+  ['✓','database connected'],
+  ['→','booting api services'],
+  ['✓','rest endpoints registered'],
+  ['✓','server ready · port 8080'],
+];
+const logBox=document.getElementById('preLogBox');
+const bar=document.getElementById('preBarFill');
+const pct=document.getElementById('prePct');
+let li=0;
+function runPreloader(){
+  if(li>=logs.length){
+    bar.style.width='100%';pct.textContent='100%';
+    setTimeout(()=>{
+      document.getElementById('preloader').classList.add('done');
+      document.body.classList.remove('loading');
+      startTerminal();
+    },600);
+    return;
+  }
+  const [icon,txt]=logs[li];
+  const div=document.createElement('div');
+  div.className='pre-log-line';
+  div.innerHTML=`<span>${icon}</span><span>${txt}</span>`;
+  logBox.appendChild(div);
+  requestAnimationFrame(()=>div.classList.add('show'));
+  li++;
+  const p=Math.round((li/logs.length)*100);
+  bar.style.width=p+'%';pct.textContent=p+'%';
+  setTimeout(runPreloader,li===4?500:220);
+}
+runPreloader();
+
+// CLOCK
+function updateClock(){
+  const now=new Date();
+  const ist=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
+  const h=String(ist.getHours()).padStart(2,'0');
+  const m=String(ist.getMinutes()).padStart(2,'0');
+  const s=String(ist.getSeconds()).padStart(2,'0');
+  document.getElementById('liveClock').textContent=`${h}:${m}:${s}`;
+}
+updateClock();setInterval(updateClock,1000);
+
+// HERO TYPING
+const words=['Spring Boot','REST APIs','JWT Auth','Hibernate ORM','MySQL','Backend Systems'];
+let wi=0,ci=0,deleting=false;
+const typEl=document.getElementById('heroTyping');
+function typeWord(){
+  const w=words[wi];
+  if(!deleting){
+    typEl.textContent=w.slice(0,++ci);
+    if(ci===w.length){deleting=true;setTimeout(typeWord,1800);return;}
+  } else {
+    typEl.textContent=w.slice(0,--ci);
+    if(ci===0){deleting=false;wi=(wi+1)%words.length;setTimeout(typeWord,300);return;}
+  }
+  setTimeout(typeWord,deleting?60:90);
+}
+setTimeout(typeWord,2000);
+
+// TERMINAL
+const termLines=[
+  {type:'cmd',text:'mvn spring-boot:run'},
+  {type:'ok',text:'✓ Spring Boot application started'},
+  {type:'ok',text:'✓ Connected to MySQL database'},
+  {type:'info',text:'> JWT authentication initialized'},
+  {type:'cmd',text:'GET /api/songs'},
+  {type:'ok',text:'200 OK · 87ms · 12 records'},
+  {type:'cmd',text:'POST /api/auth/login'},
+  {type:'ok',text:'✓ Token generated successfully'},
+  {type:'cmd',text:'GET /api/jobs?role=CANDIDATE'},
+  {type:'ok',text:'200 OK · 124ms'},
+  {type:'info',text:'> RBAC authorization validated'},
+  {type:'comment',text:'# all backend services running'},
+];
+let tl=0,termStarted=false;
+function startTerminal(){termStarted=true;runTermLine();}
+function runTermLine(){
+  const body=document.getElementById('terminalBody');
+  const curs=document.getElementById('termCursor');
+  if(tl>=termLines.length){tl=0;setTimeout(()=>{while(body.children.length>1)body.removeChild(body.firstChild);runTermLine();},2500);return;}
+  const {type,text}=termLines[tl];
+  const div=document.createElement('div');
+  div.className='t-line';
+  const prompt=document.createElement('span');
+  prompt.className='t-prompt';
+  prompt.textContent=type==='cmd'?'$':type==='ok'?'':type==='info'?'':'#';
+  const content=document.createElement('span');
+  content.className=type==='ok'?'t-ok':type==='info'?'t-info':type==='comment'?'t-comment':'t-cmd';
+  div.appendChild(prompt);div.appendChild(content);
+  body.insertBefore(div,curs);
+  requestAnimationFrame(()=>div.classList.add('show'));
+  let ci2=0;
+  function typeChar(){
+    if(ci2<=text.length){content.textContent=text.slice(0,ci2++);setTimeout(typeChar,25);}
+    else{tl++;setTimeout(runTermLine,400);}
+  }
+  typeChar();
+}
+
+// PROJECT CARD GLOW
+document.querySelectorAll('.project-card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=((e.clientX-r.left)/r.width)*100;
+    const y=((e.clientY-r.top)/r.height)*100;
+    card.style.setProperty('--mx',x+'%');
+    card.style.setProperty('--my',y+'%');
+  });
+});
+
+// COUNTER
+function animCounter(el){
+  if(el.dataset.cgpa){
+    let v=0;const target=9.01;
+    const step=()=>{v=Math.min(v+0.05,target);el.textContent=v.toFixed(2);if(v<target)requestAnimationFrame(step);};
+    step();return;
+  }
+  let v=0;const target=parseInt(el.dataset.target);
+  const suf=el.dataset.suffix||'';
+  const dur=1200;const start=performance.now();
+  const step=(now)=>{const p=Math.min((now-start)/dur,1);v=Math.round(p*target);el.textContent=v+suf;if(p<1)requestAnimationFrame(step);};
+  requestAnimationFrame(step);
+}
+
+// INTERSECTION OBSERVER
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      if(e.target.dataset.target||e.target.dataset.cgpa)animCounter(e.target);
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+document.querySelectorAll('.stat-num[data-target],.stat-num[data-cgpa]').forEach(el=>io.observe(el));
+
+// MOBILE NAV
+document.getElementById('mobileToggle').addEventListener('click',()=>{
+  const links=document.querySelector('.nav-links');
+  if(links.style.display==='flex'){links.style.display='none';}
+  else{links.style.cssText='display:flex;flex-direction:column;position:fixed;top:70px;left:0;right:0;background:rgba(7,6,13,0.97);padding:24px 20px;gap:20px;border-bottom:1px solid rgba(139,92,246,0.15);z-index:99;backdrop-filter:blur(20px)';}
+});
+</script>
+</body>
+</html>
